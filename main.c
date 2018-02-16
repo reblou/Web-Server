@@ -1,10 +1,13 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <string.h>
 #include <arpa/inet.h>
+#include <unistd.h>
 
 void *respond(char *request);
+int PORT = 3490;
 
 int main()
 {
@@ -13,7 +16,7 @@ int main()
     struct sockaddr_in servaddr;
     memset(&servaddr, 0, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
-    servaddr.sin_port = htons(80);
+    servaddr.sin_port = htons(PORT);
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
     if (bind(sockfd, (struct sockaddr *) &servaddr, sizeof(servaddr)) == -1) {
@@ -40,7 +43,25 @@ int main()
     }
     */
     getline(&str, &len, in);
-    respond(str);
+    FILE *html = fopen("html/index.html", "r");
+
+    if (html == NULL) {
+        printf("fopen error.\n");
+        return -1;
+    }
+
+    while (1) {
+        unsigned char buffer[256] = {0};
+        int nread = fread(buffer, 1, 256, html);
+        if (nread < 1) {
+            break;
+        }
+        int nwritten = fprintf(in, buffer);
+        if (nwritten < 1) {
+            printf("Writting error.\n");
+        }
+    }
+    //respond(str);
     return 0;
 }
 
@@ -48,5 +69,4 @@ void *respond(char *request)
 {
     printf("req:\n%s", request);
     return NULL;
-
 }
