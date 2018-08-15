@@ -2,12 +2,17 @@
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <string.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <signal.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 void *respond(char *request);
+int get_file_size(int fd);
 
 #define PORT 80
 
@@ -55,12 +60,6 @@ int main()
     */
 
     //getline(&str, &len, in);
-    FILE *html = fopen("html/index.html", "r");
-
-    if (html == NULL) {
-        printf("fopen error.\n");
-        return -1;
-    }
 
     /*
     HTTP/1.1 200 OK
@@ -78,12 +77,20 @@ int main()
         getline(&str, &len, in);
     }
 
+    FILE *html = fopen("html/index.html", "r");
+
+    if (html == NULL) {
+        printf("fopen error.\n");
+        return -1;
+    }
+
 
     printf("Writing to output\n");
+
     fprintf(in, "HTTP/1.1 200 OK\n");
+    /*
     while (1) {
         unsigned char buffer[256] = {0};
-        int nread = fread(buffer, 1, 256, html);
         printf("nread: %d\n", nread);
         if (nread < 1) {
             break;
@@ -93,6 +100,20 @@ int main()
             printf("Writting error.\n");
         }
     }
+    */
+
+    int fd = open("html/index.html", O_RDONLY, 0); // try to open the file
+    //int length = get_file_size(html);
+    int length;
+    unsigned char* ptr = NULL;
+
+    if( (length = get_file_size(fd)) == -1)
+      printf("failed getting resource file size");
+    if( (ptr = (unsigned char *) malloc(length)) == NULL)
+      printf("failed allocating memory for reading resource");
+    read(fd, ptr, length); // read the file into memory
+    send(insockfd, ptr, length, 0);  // send it to socket
+    //send(in, html, length, 0);
     //respond(str);
 
     printf("Returing 0\n");
@@ -105,7 +126,10 @@ void *respond(char *request)
     return NULL;
 }
 
-void close_handler(int sig)
-{
+int get_file_size(int fd) {
+   struct stat stat_struct;
 
+   if(fstat(fd, &stat_struct) == -1)
+      return -1;
+   return (int) stat_struct.st_size;
 }
