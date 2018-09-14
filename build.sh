@@ -1,2 +1,2 @@
-gcc main.c -o main.o
+gcc main.c -o main.o -lpthread
 chmod u+s main.o

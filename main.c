@@ -10,16 +10,34 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <pthread.h>
 
 int bind_socket(int *sock);
 int respond(char *file, int sockfd, FILE *in);
 int read_input(FILE* in);
 int get_file_size(int fd);
+long thread_code(void *arg);
 
 #define PORT 80
 
 int main()
 {
+    pthread_t threads[10];
+
+    int i;
+    for(i =0; i<10; i++) {
+        pthread_create(&threads[i], NULL, &thread_code, (void *) i);
+    }
+
+    void *retval = NULL;
+
+    for( i=0; i < 10; i++) {
+        pthread_join(threads[i], &retval);
+        printf("retval: %d\n", (long) retval);
+    }
+
+
+
     int yes = 1;
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof yes) == -1) {
@@ -109,12 +127,16 @@ int respond(char *file, int sockfd, FILE *in) {
     return 0;
 }
 
-
-
 int get_file_size(int fd) {
    struct stat stat_struct;
 
    if(fstat(fd, &stat_struct) == -1)
       return -1;
    return (int) stat_struct.st_size;
+}
+
+long thread_code(void *arg) {
+    printf("thread %d\n", (long) arg);
+    return (long) arg;
+
 }
