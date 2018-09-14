@@ -1,0 +1,3 @@
+-handle more than one request
+-serve page asked for in request
+-threads for concurrent visits
