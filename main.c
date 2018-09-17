@@ -22,6 +22,7 @@ long thread_code(void *arg);
 
 int main()
 {
+    //~~~~
     pthread_t threads[10];
 
     int i;
@@ -35,8 +36,7 @@ int main()
         pthread_join(threads[i], &retval);
         printf("retval: %d\n", (long) retval);
     }
-
-
+    //~~~~
 
     int yes = 1;
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -49,23 +49,28 @@ int main()
     bind_socket(&sockfd);
 
     listen(sockfd, SOMAXCONN);
+    printf("Listening\n");
 
     int insockfd;
 
-    if ((insockfd = accept(sockfd, NULL, NULL)) == -1) {
-        printf("accept error.\n");
-        return -1;
+    while (1) {
+        if ((insockfd = accept(sockfd, NULL, NULL)) == -1) {
+            printf("accept error.\n");
+            return -1;
+        }
+        printf("Accepted connection successfully.\n");
+
+        FILE *in = fdopen(insockfd, "r+");
+        read_input(in);
+
+        char *file = "html/index.html";
+
+        respond(file, insockfd, in);
+
+        printf("Returing 0\n");
+
+        close(insockfd);
     }
-    printf("Accepted connection successfully.\n");
-
-    FILE *in = fdopen(insockfd, "r+");
-    read_input(in);
-
-    char *file = "html/index.html";
-
-    respond(file, insockfd, in);
-
-    printf("Returing 0\n");
     return 0;
 }
 
@@ -103,7 +108,7 @@ int respond(char *file, int sockfd, FILE *in) {
 
     printf("Writing to output\n");
 
-    fprintf(in, "HTTP/1.1 200 OK\n");
+    //fprintf(in, "HTTP/1.1 200 OK\n");
 
     int fd = open(file, O_RDONLY, 0); // try to open the file
     printf("%s\n", file);
