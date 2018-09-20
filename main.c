@@ -22,22 +22,6 @@ long thread_code(void *arg);
 
 int main()
 {
-    //~~~~
-    pthread_t threads[10];
-
-    int i;
-    for(i =0; i<10; i++) {
-        pthread_create(&threads[i], NULL, &thread_code, (void *) i);
-    }
-
-    void *retval = NULL;
-
-    for( i=0; i < 10; i++) {
-        pthread_join(threads[i], &retval);
-        printf("retval: %d\n", (long) retval);
-    }
-    //~~~~
-
     int yes = 1;
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof yes) == -1) {
@@ -138,10 +122,4 @@ int get_file_size(int fd) {
    if(fstat(fd, &stat_struct) == -1)
       return -1;
    return (int) stat_struct.st_size;
-}
-
-long thread_code(void *arg) {
-    printf("thread %d\n", (long) arg);
-    return (long) arg;
-
 }

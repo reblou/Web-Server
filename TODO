@@ -1,2 +1,4 @@
 -serve page asked for in request
 -threads for concurrent visits
+-event logging
+    -email myself with daily reports (?)
