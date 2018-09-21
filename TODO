@@ -1,4 +1,7 @@
--serve page asked for in request
--threads for concurrent visits
+-better error handling on request file not found
+-threads for concurrent requests
+    -threads pool
+    -new requests added to queue
+-apache AB for load testing
 -event logging
     -email myself with daily reports (?)

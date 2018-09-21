@@ -14,11 +14,13 @@
 
 int bind_socket(int *sock);
 int respond(char *file, int sockfd, FILE *in);
-int read_input(FILE* in);
+int read_input(FILE* in, char *buffer);
 int get_file_size(int fd);
 long thread_code(void *arg);
 
 #define PORT 80
+#define HTML_ROOT "html"
+#define DEFAULT_PAGE "/index.html"
 
 int main()
 {
@@ -45,9 +47,16 @@ int main()
         printf("Accepted connection successfully.\n");
 
         FILE *in = fdopen(insockfd, "r+");
-        read_input(in);
+        char page[500];
+        read_input(in, page);
+        printf("test\n");
 
-        char *file = "html/index.html";
+        char file[500];
+        strcpy(file, HTML_ROOT);
+        strcat(file, page);
+
+        printf("file: %s\n", file);
+
 
         respond(file, insockfd, in);
 
@@ -73,14 +82,29 @@ int bind_socket(int *sock) {
 
 }
 
-int read_input(FILE* in) {
+int read_input(FILE* in, char *buffer) {
     char * str = NULL;
+    char * url;
+    strcpy(buffer, DEFAULT_PAGE);
+    //char page[500] = "index.html";
     size_t len = 0;
 
     printf("Reading\n");
     getline(&str, &len, in);
     while (str[0] != '\r' && str[0] != '\n')  {
-        printf("%x, %s, %c\n", *str, str, str[0]);
+        printf("%s", str);
+        if (strncmp(str, "GET ", 4) == 0) {
+            url = str+4;
+            char *ptr = strchr(url, ' ');
+            if (ptr != NULL) {
+                *ptr = '\0';
+            }
+
+            if (strcmp(url, "/") != 0) {
+                strcpy(buffer, url);
+            }
+            printf("url: \"%s\"\n", url);
+        }
         getline(&str, &len, in);
     }
     return 0;
