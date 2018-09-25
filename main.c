@@ -21,6 +21,7 @@ long thread_code(void *arg);
 #define PORT 80
 #define HTML_ROOT "html"
 #define DEFAULT_PAGE "/index.html"
+#define NOT_FOUND "/404.html"
 
 int main()
 {
@@ -118,7 +119,17 @@ int respond(char *file, int sockfd, FILE *in) {
 
     //fprintf(in, "HTTP/1.1 200 OK\n");
 
-    int fd = open(file, O_RDONLY, 0); // try to open the file
+    int fd;
+    if ((fd = open(file, O_RDONLY, 0)) == -1) {
+        printf("Failed to open file\n");
+        char f[500];
+        strcpy(file, HTML_ROOT);
+        strcat(file, NOT_FOUND);
+        if ((fd = open(file, O_RDONLY, 0)) == -1) {
+            printf("Failed to open 404 file: %s\n", file);
+            return -1;
+        }
+    } // try to open the file
     printf("%s\n", file);
 
     int length;
