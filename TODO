@@ -1,4 +1,3 @@
--Comment existing code
 -threads for concurrent requests
     -threads pool
     -new requests added to queue
