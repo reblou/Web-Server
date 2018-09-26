@@ -27,10 +27,11 @@ int main()
 {
     int yes = 1;
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+
+    // stops socket bind errors when running the program frequently
     if (setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof yes) == -1) {
         perror("setsockopt");
         exit(1);
-        return -1;
     }
 
     bind_socket(&sockfd);
@@ -40,6 +41,7 @@ int main()
 
     int insockfd;
 
+    // Main loop runs accpeting and replying to requests until program terminated
     while (1) {
         if ((insockfd = accept(sockfd, NULL, NULL)) == -1) {
             printf("accept error.\n");
@@ -47,17 +49,16 @@ int main()
         }
         printf("Accepted connection successfully.\n");
 
-        FILE *in = fdopen(insockfd, "r+");
+        FILE *in = fdopen(insockfd, "r+"); // open connection stream
         char page[500];
         read_input(in, page);
         printf("test\n");
 
+        // copy requested filename from read_input into file
         char file[500];
         strcpy(file, HTML_ROOT);
         strcat(file, page);
-
         printf("file: %s\n", file);
-
 
         respond(file, insockfd, in);
 
@@ -68,6 +69,9 @@ int main()
     return 0;
 }
 
+/*
+    sets socket options and binds socket
+*/
 int bind_socket(int *sock) {
     struct sockaddr_in servaddr;
     memset(&servaddr, 0, sizeof(servaddr));
@@ -83,11 +87,14 @@ int bind_socket(int *sock) {
 
 }
 
+/*
+    given an incoming connection and a buffer, reads the http request details,
+    and puts the requested filename into the buffer.
+*/
 int read_input(FILE* in, char *buffer) {
     char * str = NULL;
     char * url;
     strcpy(buffer, DEFAULT_PAGE);
-    //char page[500] = "index.html";
     size_t len = 0;
 
     printf("Reading\n");
@@ -113,6 +120,9 @@ int read_input(FILE* in, char *buffer) {
 }
 
 
+/*
+    given an inconming connection, sends the requested web page to the client.
+*/
 int respond(char *file, int sockfd, FILE *in) {
 
     printf("Writing to output\n");
@@ -151,6 +161,9 @@ int respond(char *file, int sockfd, FILE *in) {
     return 0;
 }
 
+/*
+    returns the filesize of a file.
+*/
 int get_file_size(int fd) {
    struct stat stat_struct;
 
